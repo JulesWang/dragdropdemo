@@ -1,323 +1,66 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-<meta http-equiv="x-ua-compatible" content="ie=7">
-<meta http-equiv="expires" content="0">  
-<title>欢迎</title>
-<link type="text/css" rel="stylesheet" href="./public/style.css">
-<link type="text/css" rel="stylesheet" href="./public/jquery-ui.css">
-<link type="text/css" rel="stylesheet" href="./public/fancybox/jquery.fancybox-1.3.4.css">
-<script type="text/javascript" src="./public/jquery-1.8.2.js"></script>
-<script type="text/javascript" src="./public/jquery-ui.js"></script>
-<script type="text/javascript" src="./public/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
-<script type="text/javascript" src="./public/fancybox/jquery.mousewheel-3.0.4.pack.js"></script>
-<script type="text/javascript" src="./public/jquery.animate-shadow-min.js"></script>
-<script type="text/javascript">
-	function log(str) { 
-		$('#monitorlog').html($('#monitorlog').html() + str + '<br/>');
-	}
-	function blink() {
-			
-		$(this).animate({
-			//	width: "70%",
-			 //boxShadow: "0 0 18px rgba(255, 254, 0, 0.5)",	
-			 boxShadow: "0 0 18px 8px #FFF000",	
-			 }, 800, "linear", function(){
-
-			 $(this).animate({ boxShadow:'none'},200);
-			 log("完成");
-			 });
-	}
-
-	$(function() {
-
-		$('.server').draggable({ 
-revert: true,
-opacity: 0.6,
-cursor: "pointer",
-//helper: "clone",
-
-		});
-
-
-		$('.ubuntu, .win7, .neokylin').draggable({ 
-revert: "invalid",
-opacity: 0.6,
-cursor: "pointer",
-//scope: "cards",
-helper: "clone",
-		});
-
-
-		$('.central').droppable({
-			hoverClass: "drophover",
-			tolerance: "pointer" ,
-			drop: function(event, ui ) {
-				if(ui.draggable.hasClass('server')) {
-					var name = ui.draggable.attr('id');
-					log('添加主机' + name + '.');
-					//ui.draggable.remove();
-					ui.draggable.hide();
-					var newone = $('<li id='+name+'in class=\'server-wrap\'><div class=\'vms\'><div class=\'close-header\'><button class="close" aria-hidden="true">×</button></div><ul></ul></div><div class=\'label server-big\'></div><div class=\'name\'>'+name+'</div></li>');
-					$('.central>ul').append(newone);
-					newone.hide();
-					newone.fadeIn('slow');
-					$('.central>ul #'+name+'in .vms').droppable({
-						hoverClass: "drophover",
-						tolerance: "pointer" ,
-						greedy: true,
-						//scope: "cards",
-						accept: '.ubuntu, .win7, .neokylin',
-
-						drop: function(event, ui ) {
-						//$('#'+name+'in .vms ul').append('<li class=\'card scaleSmall' +  \'></li>');
-
-					if(ui.draggable.hasClass('scaleSmall')) {
-					
-						var c = ui.draggable;
-						//c.parent('a').remove();
-						c.css('left', 0);
-						c.css('top', 0);
-						c.css('opacity', 1);
-						//$(this).find('ul').append($('<a class=\'thumb\' rel=\'fancybox\' href=\''+href+'\'></a>').append(c));
-						$(this).find('ul').append(c.parent('a'));
-
-						c.hide();
-						c.fadeIn(2000, blink);
-					        log('迁移虚拟机到'+ name + '...');
-
-					c.draggable({
-revert: "invalid",
-opacity: 0.6,
-cursor: "pointer",
-});
-
-					}
-					else {
-						var c = ui.draggable.clone();
-
-					        log('从模板创建虚拟机...');
-						c.addClass('scaleSmall');
-						href = c.attr('data-url');
-						c.draggable({
-revert: "invalid",
-opacity: 0.6,
-cursor: "pointer",
-});
-
-
-						$(this).find('ul').append($('<a class=\'thumb\' rel=\'fancybox\' href=\''+href+'\'></a>').append(c));
-						c.hide();
-						c.fadeIn(2000, blink);
-
-						//$(this).find('.thumb').append(c);
-						$('.thumb').fancybox();
-						}
-					}
-					});
-					$('#'+name+'in').hover(
-						function(){
-						$(this).find('.close').show();
-						},
-						function(){
-						$(this).find('.close').hide();
-						}
-
-						);
-					$('#'+name+'in .close').click(function() {
-							$('#'+name+'in').fadeOut('slow', function(){
-									$(this).remove();
-								log('删除主机' + name + '.');
-								});
-						//$('#'+name+'in').remove();
-						//$('#'+name).slideDown('slow');
-						$('#'+name).fadeIn('slow');
-					});
-				}
-				else
-				{
-					 var small = -1;
-					 var id;
-					 $('.server-wrap').each(function() {
-						var len = $(this).find('.card').length;
-						if(small === -1 || len < small)  {
-						    small = len;
-						    id = $(this).attr('id');
-						}
-					
-					});
-					if (small === -1)
-						return;
-					log("虚拟机自动负载平衡到主机" + id.substr(0, id.length-2) + '.');
-					var c;
-					if(ui.draggable.hasClass('scaleSmall')) {
-						c = ui.draggable;
-						//c.parent('a').remove();
-						c.css('left', 0);
-						c.css('top', 0);
-						c.css('opacity', 1);
-						$('#'+id+' .vms ul').append(c.parent('a'));
-					}
-					else {
-						c = ui.draggable.clone();
-						c.addClass('scaleSmall');
-					
-						href = c.attr('data-url');
-
-						$('#'+id+' .vms ul').append($('<a class=\'thumb\' rel=\'fancybox\' href=\''+href+'\'></a>').append(c));
-					}
-					c.draggable({
-revert: "invalid",
-opacity: 0.6,
-cursor: "pointer",
-});
-					c.hide();
-					c.fadeIn(2000, blink);
-
-					$('.thumb').fancybox();
-				}
-			},
-			});
-		$('.btn').click(function() {
-			$(".right").hide();
-			$(".central").css("margin-right", 10);
-			$('.btn_o').show();
-		});
-		$('.btn_o').click(function() {
-			$(".right").show();
-			$(".central").css("margin-right", 232);
-			$(this).hide();
-		});
-
-		if ($('#monitorlog').length) {
-			$.getJSON($('#contextPath').val()
-					+ "/statistics/getmonitorwarmlogmain.action", function(data) {
-				if (data.msg.flag) {
-					$(".loading").remove();
-					$.each(data.msg.data.rows, function(i, item) {
-						$('#monitorlog').append(
-								"<div class='baoj_font'>" + "<br />"
-										//+ item.serviceState + "</h3>"
-										+ item.hostName + " " 
-										+ item.serviceType + " <br />" 
-										+ $.service2cn(item.serviceDesc)+" " + item.serviceOutput
-										+ "<br /> <span>" + item.logTime.replace(/T/g, " ")
-										+ "</span>" + "</div>"
-										+ "<div class='line'>&nbsp;</div>");
-					});
-				} else {
-					alert("错误码:" + data.msg.message);
-				}
-			});
-		} else {
-			$(".right").hide();
-			$(".central").css("margin-right", 10);
-			$('.btn_o').hide();
-		}
-	});
-
-</script>
-</head>
-<body>
-	<div class="warp">
-		<!--header -->
-
-	<!--header -->
-	<div class="header">
-		<div class="center">
-			<div class="logo"></div>
-			<div class="user" style="width: 160px;">
-				<div class="user_top">
-					欢迎您,
-					admin
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta http-equiv="x-ua-compatible" content="ie=7">
+		<title>欢迎</title>
+		<link type="text/css" rel="stylesheet" href="./public/jquery-ui.css">
+		<link type="text/css" rel="stylesheet" href="./public/fancybox/jquery.fancybox-1.3.4.css">
+		<link type="text/css" rel="stylesheet" href="./public/style.css">
+		<script type="text/javascript" src="./public/jquery-1.8.2.js"></script>
+		<script type="text/javascript" src="./public/jquery-ui.js"></script>
+		<script type="text/javascript" src="./public/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+		<script type="text/javascript" src="./public/fancybox/jquery.mousewheel-3.0.4.pack.js"></script>
+		<script type="text/javascript" src="./public/jquery.animate-shadow-min.js"></script>
+		<script type="text/javascript" src="./public/index.js"></script>
+	</head>
+	<body>
+		<div class="warp">
+			<div class="header">
+			</div>
+			<div class="main">
+				<div class="left-1 box">
+					<div class="header"> 主机资源 </div>
+					<div class="content">
+						<ul>
+							<li id="server1" class="card server">server1</li>
+							<li id="server2" class="card server">server2</li>
+							<li id="server3" class="card server">server3</li>
+						</ul>
+					</div>
 				</div>
-				<div class="user_down">
+				<div class="left-2 box">
+					<div class="header"> 虚拟机模板 </div>
+					<div  class="content">
+						<ul>
+							<li class="card neokylin" data-url="./images/neokylin_d.png"></li>
+							<li class="card ubuntu" data-url="./images/ubuntu_d.png"></li>
+							<li class="card win7" data-url="./images/win7_d.jpg"></li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="central box">
 					<ul>
-						<li class="icon1"><a href="#"></a>
-							<div id="box_T1" class="toptaps">返回首页</div></li>
-						<li class="icon2"><a id="user-link" href="#"></a>
-							<div id="box_T2" class="toptaps2">修改个人信息</div>
-						</li>
-						<li class="icon3"><a id="passwd-link" href="#"></a>
-							<div id="box_T3" class="toptaps3">修改密码</div>
-						</li>
-						<li class="icon4"><a id="hellp-link" href="#"></a>
-							<div id="box_T4" class="toptaps4">关于</div>
-						</li>
-						<li class="icon6"><a id="hellp2-link" href=""></a>
-							<div id="box_T6" class="toptaps6">授权信息</div>
-						</li>						
-						<li class="icon5"><a href="#"></a>
-							<div id="box_T5" class="toptaps5">退出登录</div>
+						<li id="server-container-template" style="display: none">
+							<div class="vms">
+								<div class="close-header">
+									<button class="close" aria-hidden="true">×</button>
+								</div>
+								<ul>
+								</ul>
+							</div>
+							<div class="label server-big"></div>
 						</li>
 					</ul>
 				</div>
-			</div>
-		</div>
-	</div>
-	<!--header end-->
-	<div class="con_w">
-	<!--left -->
-	<div class="left-1 box">
-		<div class="header">
-				<h2>主机资源</h2>
-		</div>
-		<div class="">
-			<ul>
-				<li id='server1' class='card server'>server1</li>
-				<li id='server2' class='card server'>server2</li>
-				<li id='server3' class='card server'>server3</li>
-			</ul>
-		</div>
 
-	</div>
-	<div class="left-2 box">
-		<div class="header">
-				<h2>虚拟机模板</h2>
-		</div>
-		<div  class="">
-			<ul>
-				<li class='card neokylin' data-url='./images/neokylin_d.png'></li>
-				<li class='card ubuntu' data-url='./images/ubuntu_d.png'></li>
-				<li class='card win7' data-url='./images/win7_d.jpg'></li>
-			</ul>
-		</div>
-
-	</div>
-
-	<!--left end-->
-
-
-			<!--left end-->
-			<!--Central  -->
-			<div class="central box">
-				<ul></ul>
-			</div>
-			<!--Central end -->
-			<!--right -->
-			<div class="right box">
-				<div class="header">
-					<h2>系统日志 </h2>
-				</div>
-				<div id="monitorlog">
+				<div class="right box">
+					<div class="header"> 系统日志 </div>
+					<div class="content">
+						<ul id="monitorlog"> </ul>
+					</div>
 				</div>
 			</div>
-			<!--right end -->
 		</div>
-		<!--con end-->
-		<!--footer -->
-		
-
-	<!--footer -->
-	<div class="footerbox">
-		<div class="footer ">
-			<ul>
-				<li></li>
-			</ul>
-		</div>
-	</div>
-	<!--footer end -->
-
-
-</body>
+	</body>
 </html>
